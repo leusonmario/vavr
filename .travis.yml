@@ -1,17 +1,26 @@
+
+sudo: required
 language: java
+
 jdk:
   - oraclejdk8
-env:
-  global:
-    - secure: "HU0QOLEDkYHcjX+PkicGGQ5g2L1/19V2fH13OSn82DOFlIiWmCfhSI8EG/QoWwPDp/HYQ4DH5Lo+ZEhVz5tgEultItyJ38LZJl/YYOzSAiRvTezmDdz+Cdg6SXAwCvgFCTagEJ1ChL5NyenDGDlwPB/drN0HlNNU6igPqNkM8l0="
-    - secure: "VByzrX+inH3Z2nq50Hkj1FJnyOjPdsdIo/RUcl6DxUjkYfXP0n3tkPZGFA0PwiDpEwvRcSGLMR7mJ59Bhja5wgqXNhMqV4F0kB2PEFHSC3UmkyMnTSmDBKvP2aT6JLq00K3mYeNV5HiaYV4S7UVNdzZwaPCgc2aVZN8hF4f5/V8="
-    - secure: "GWvKpGPBF1b/2tkYzJ/IwKpGd3kjfYpadIFoQOdQS3r6iZkutZ9FhW6vINIRsgcIRHTVha0BywG7m5sJIYo/jmsDbXc2VJFO7EcXkK6k96VZYb0pHjbXqeP/u9/ZfSzeQ4w3qNYUiXztmmrLjbCzG2gV4D2CqOaug2o81mVj4LI="
-before_install:
-  - sudo apt-get update
-  - sudo apt-get install --only-upgrade -y oracle-java8-installer
-  - pip install --user codecov
-after_success:
-  - codecov
-  - mvn clean deploy -DskipTests --settings .travis/maven-settings.xml
-  - mvn javadoc:javadoc -DskipTests
-  - .travis/deploy-javadoc-snapshot.sh
+
+
+script:
+  - mvn clean cobertura:cobertura -Dtest=FutureTest#shouldGetFirstCompletedOfSucceedingFuturesUsingForkJoinPool -DfailIfNoTests=false
+
+before_deploy:
+- tar -zcvf coverage-result.tar.gz /home/travis/build/leusonmario/vavr/target/site/cobertura
+
+deploy:
+  provider: releases
+  api_key:
+    secure: "SmTmMNyC4q+c29ANQ8AcyZ/brA6jMBpcg7Xagqq02AwfnXQpHkx0IA26qHpEwym8nax89eASEhJXoMb7F4/C1Cw3KEx+ESkAWqZQoFGub7Fl1V2dF+PjD/0WIEq91Rc4bUA407SXZp67rMwOFKCKKrI6XimQEAuLUOSq3OgTu09XHj5y7OjGm+wehcs/K5dQj1hAYYX01MrGwAVu0YdAQyoCpy7lxr+XdiKPqA22Lc7Fcb7NKQiAWU9S0JdrojfXcpZK4SDCqvKVIF8h57rr6Mn8TvZi+hVdtrWAzXKGSt+/qdvau9vhFxej49UXTl7/UdyHtenpOjJZkLa29Krk/7KT7AlGbKbCrDNEWO5l543MKYzICL6ZNUvpjYHbySUoAE4Cx/Ihx/dtUcXwwm6MB74mYLTgsSuf62oRDjdWgCajiwB1gTK+g/upnrVtj+KKmY7dftxw+NZmleRDNNyJDrzmSLG9REmwDMHeicJcVQsUbBPIQ5bsmh+NVtSvag2c+SjXaHNSzMcqpeuz34Opuwm8NkhDFeFIT+LCvUgep1o0sxgphsDsvDBCwDX0GhjEmQ3j0jrbERuce2wshNTLSOF/e+tk1tXENEZHawIaSMBWLGOXVrMnuGewfFjqQ10wwCvGM8TQ7E+JrxfJYrK6+88j4bqFjO574j1IBNc3xFI="
+
+
+  file: coverage-result.tar.gz
+  file_glob: true
+  overwrite: true
+  skip_cleanup: true
+  on:
+    tags: true
